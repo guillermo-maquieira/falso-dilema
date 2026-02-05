@@ -34,8 +34,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 flex flex-col">
-      <header className="flex items-center justify-between mb-8 max-w-lg mx-auto w-full">
-        <h1 className="text-2xl font-bold text-primary">Falso Dilema</h1>
+      <header className="flex items-center justify-end mb-8 max-w-lg mx-auto w-full">
         <Link to="/admin">
           <Button variant="ghost" size="icon">
             <Settings className="w-5 h-5" />

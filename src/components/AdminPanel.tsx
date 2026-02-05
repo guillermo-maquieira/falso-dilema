@@ -2,20 +2,26 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuestions, useCreateQuestion, useDeleteQuestion } from "@/hooks/useQuestions";
-import { Trash2, Plus, X } from "lucide-react";
+import { useQuestions, useCreateQuestion, useDeleteQuestion, useUpdateQuestion } from "@/hooks/useQuestions";
+import { Trash2, Plus, X, Eye, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { QuestionEditor } from "./QuestionEditor";
+import type { Question } from "@/hooks/useQuestions";
 
 export function AdminPanel() {
   const { data: questions, isLoading } = useQuestions();
   const createQuestion = useCreateQuestion();
   const deleteQuestion = useDeleteQuestion();
+  const updateQuestion = useUpdateQuestion();
 
   const [emoji, setEmoji] = useState("");
   const [answers, setAnswers] = useState([
     { text: "", is_correct: true },
     { text: "", is_correct: false },
   ]);
+
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [viewingQuestion, setViewingQuestion] = useState<Question | null>(null);
 
   const addAnswer = () => {
     if (answers.length < 3) {
@@ -72,12 +78,20 @@ export function AdminPanel() {
     }
   };
 
+  const handleUpdate = async (data: {
+    id: string;
+    emoji: string;
+    answers: { id?: string; text: string; is_correct: boolean }[];
+  }) => {
+    await updateQuestion.mutateAsync(data);
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5" /> Nueva pregunta
+            <Plus className="w-5 h-5" /> Nueva Pregunta
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -138,7 +152,7 @@ export function AdminPanel() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Preguntas existentes ({questions?.length ?? 0})</CardTitle>
+          <CardTitle>Preguntas ({questions?.length ?? 0})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -158,20 +172,82 @@ export function AdminPanel() {
                       {q.answers.length} respuestas
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(q.id)}
-                    disabled={deleteQuestion.isPending}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setViewingQuestion(q)}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingQuestion(q)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(q.id)}
+                      disabled={deleteQuestion.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      <QuestionEditor
+        question={editingQuestion}
+        open={!!editingQuestion}
+        onClose={() => setEditingQuestion(null)}
+        onSave={handleUpdate}
+        isSaving={updateQuestion.isPending}
+      />
+
+      {/* View Dialog */}
+      {viewingQuestion && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setViewingQuestion(null)}>
+          <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Vista previa</span>
+                <Button variant="ghost" size="sm" onClick={() => setViewingQuestion(null)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center mb-6">
+                <span className="text-6xl">{viewingQuestion.emoji}</span>
+              </div>
+              <div className="space-y-2">
+                {viewingQuestion.answers.map((a) => (
+                  <div
+                    key={a.id}
+                    className={`p-3 rounded-lg border ${
+                      a.is_correct
+                        ? "bg-success/20 border-success"
+                        : "bg-muted border-border"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      {a.is_correct && <span className="text-success">✓</span>}
+                      {a.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
