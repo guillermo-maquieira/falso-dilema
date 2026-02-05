@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string
+          id: string
+          setting_key: string
+          setting_value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          setting_key: string
+          setting_value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          setting_key?: string
+          setting_value?: string
+        }
+        Relationships: []
+      }
       answers: {
         Row: {
           created_at: string
@@ -63,6 +84,45 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      votes: {
+        Row: {
+          answer_id: string
+          created_at: string
+          id: string
+          question_id: string
+          voter_id: string
+        }
+        Insert: {
+          answer_id: string
+          created_at?: string
+          id?: string
+          question_id: string
+          voter_id: string
+        }
+        Update: {
+          answer_id?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_answer_id_fkey"
+            columns: ["answer_id"]
+            isOneToOne: false
+            referencedRelation: "answers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "votes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

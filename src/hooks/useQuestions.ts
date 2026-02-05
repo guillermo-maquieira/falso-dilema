@@ -73,6 +73,49 @@ export function useCreateQuestion() {
   });
 }
 
+export function useUpdateQuestion() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      emoji,
+      answers,
+    }: {
+      id: string;
+      emoji: string;
+      answers: { id?: string; text: string; is_correct: boolean }[];
+    }) => {
+      // Update question emoji
+      const { error: qError } = await supabase
+        .from("questions")
+        .update({ emoji })
+        .eq("id", id);
+
+      if (qError) throw qError;
+
+      // Delete existing answers and insert new ones
+      const { error: deleteError } = await supabase
+        .from("answers")
+        .delete()
+        .eq("question_id", id);
+
+      if (deleteError) throw deleteError;
+
+      const { error: aError } = await supabase.from("answers").insert(
+        answers.map((a) => ({
+          question_id: id,
+          text: a.text,
+          is_correct: a.is_correct,
+        }))
+      );
+
+      if (aError) throw aError;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["questions"] }),
+  });
+}
+
 export function useDeleteQuestion() {
   const queryClient = useQueryClient();
 
