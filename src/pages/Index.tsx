@@ -56,7 +56,7 @@ const Index = () => {
           <GameComplete score={score} total={shuffledQuestions.length} onRestart={handleRestart} />
         ) : (
           <>
-            <ScoreDisplay score={score} total={shuffledQuestions.length} />
+            <ScoreDisplay score={score} total={shuffledQuestions.length} current={currentIndex + 1} />
             <QuizCard key={currentQuestion.id} question={currentQuestion} onAnswer={handleAnswer} />
           </>
         )}
