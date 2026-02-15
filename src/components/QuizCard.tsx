@@ -60,11 +60,7 @@ export function QuizCard({ question, onAnswer }: QuizCardProps) {
   return (
     <Card className={cn(
       "w-full max-w-lg mx-auto overflow-hidden transition-all duration-300",
-      showResult && selected && question.answers.find(a => a.id === selected)?.is_correct 
-        ? "animate-pulse-success" 
-        : showResult && selected 
-          ? "animate-shake" 
-          : "animate-bounce-in"
+      showResult ? "animate-fade-in" : "animate-bounce-in"
     )}>
       <CardContent className="p-8">
         <div className="text-center mb-8">
@@ -77,8 +73,8 @@ export function QuizCard({ question, onAnswer }: QuizCardProps) {
         <div className="space-y-3">
           {question.answers.map((answer) => {
             const isSelected = selected === answer.id;
-            const isCorrect = answer.is_correct;
             const percentage = getPercentage(answer.id);
+            const isMostVoted = showResult && totalVotes > 0 && percentage === Math.max(...question.answers.map(a => getPercentage(a.id))) && percentage > 0;
 
             return (
               <Button
@@ -87,9 +83,8 @@ export function QuizCard({ question, onAnswer }: QuizCardProps) {
                 className={cn(
                   "w-full py-6 text-lg font-medium transition-all duration-300 relative overflow-hidden",
                   !showResult && "hover:bg-primary hover:text-primary-foreground hover:border-primary",
-                  showResult && isSelected && isCorrect && "bg-success text-success-foreground border-success",
-                  showResult && isSelected && !isCorrect && "bg-destructive text-destructive-foreground border-destructive",
-                  showResult && !isSelected && isCorrect && "bg-success/20 border-success",
+                  showResult && isMostVoted && "bg-success/20 border-success text-success-foreground",
+                  showResult && isSelected && "ring-2 ring-primary",
                   showResult && "cursor-default"
                 )}
                 onClick={() => handleSelect(answer.id)}
@@ -105,7 +100,7 @@ export function QuizCard({ question, onAnswer }: QuizCardProps) {
                   <div 
                     className={cn(
                       "absolute left-0 top-0 h-full transition-all duration-500 opacity-20",
-                      isCorrect ? "bg-success" : "bg-muted-foreground"
+                      isMostVoted ? "bg-success" : "bg-muted-foreground"
                     )}
                     style={{ width: `${percentage}%` }}
                   />
