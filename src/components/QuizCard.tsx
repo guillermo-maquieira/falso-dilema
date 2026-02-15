@@ -71,7 +71,7 @@ export function QuizCard({ question, onAnswer }: QuizCardProps) {
           <span className="text-7xl block mb-4" role="img" aria-label="Question emoji">
             {question.emoji}
           </span>
-          <p className="text-muted-foreground text-sm">¿Qué representan estos emojis?</p>
+          <p className="text-muted-foreground text-sm">¿Qué preferís?</p>
         </div>
 
         <div className="space-y-3">
