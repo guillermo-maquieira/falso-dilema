@@ -53,7 +53,7 @@ const Index = () => {
             </Link>
           </div>
         ) : isGameComplete ? (
-          <GameComplete score={score} total={shuffledQuestions.length} onRestart={handleRestart} />
+          <GameComplete score={score} total={shuffledQuestions.length} onRestart={handleRestart} questions={shuffledQuestions} />
         ) : (
           <>
             <ScoreDisplay score={score} total={shuffledQuestions.length} current={currentIndex + 1} />
