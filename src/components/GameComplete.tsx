@@ -9,9 +9,17 @@ interface GameCompleteProps {
   total: number;
   onRestart: () => void;
   questions: Question[];
+  playerName: string;
+  playerAnswers: Record<string, string>;
 }
 
-function QuestionResult({ question }: { question: Question }) {
+function QuestionResult({
+  question,
+  playerAnswerId,
+}: {
+  question: Question;
+  playerAnswerId?: string;
+}) {
   const { data: voteCounts = {} } = useVoteCounts(question.id);
   const totalVotes = Object.values(voteCounts).reduce((sum, c) => sum + c, 0);
   const getPercentage = (answerId: string) => {
@@ -19,26 +27,56 @@ function QuestionResult({ question }: { question: Question }) {
     return Math.round(((voteCounts[answerId] || 0) / totalVotes) * 100);
   };
 
-  const maxPct = Math.max(...question.answers.map(a => getPercentage(a.id)));
+  const maxPct = Math.max(...question.answers.map((a) => getPercentage(a.id)));
+  const mostVotedIds = question.answers
+    .filter((a) => getPercentage(a.id) === maxPct && maxPct > 0)
+    .map((a) => a.id);
+
+  const playerMatchedMajority = playerAnswerId
+    ? mostVotedIds.includes(playerAnswerId)
+    : false;
 
   return (
     <div className="space-y-2">
-      <p className="text-2xl text-center">{question.emoji}</p>
+      <div className="flex items-center gap-2 justify-center">
+        <span className="text-2xl">{question.emoji}</span>
+        {playerAnswerId && (
+          <span
+            className={cn(
+              "text-xs font-bold px-2 py-0.5 rounded-full",
+              playerMatchedMajority
+                ? "bg-success/20 text-success"
+                : "bg-destructive/20 text-destructive"
+            )}
+          >
+            {playerMatchedMajority ? "✓ Mayoría" : "✗ Minoría"}
+          </span>
+        )}
+      </div>
       {question.answers.map((answer) => {
         const pct = getPercentage(answer.id);
         const isMostVoted = totalVotes > 0 && pct === maxPct && pct > 0;
+        const isPlayerChoice = playerAnswerId === answer.id;
 
         return (
           <div
             key={answer.id}
             className={cn(
               "relative overflow-hidden rounded-md border px-4 py-2 text-sm",
-              isMostVoted ? "border-success bg-success/10 font-semibold" : "border-border"
+              isMostVoted
+                ? "border-success bg-success/10 font-semibold"
+                : "border-border",
+              isPlayerChoice && !isMostVoted && "border-destructive bg-destructive/10"
             )}
           >
             <span className="relative z-10 flex justify-between">
-              <span>{answer.text}</span>
-              {totalVotes > 0 && <span className="text-muted-foreground">{pct}%</span>}
+              <span>
+                {isPlayerChoice && "👉 "}
+                {answer.text}
+              </span>
+              {totalVotes > 0 && (
+                <span className="text-muted-foreground">{pct}%</span>
+              )}
             </span>
             {totalVotes > 0 && (
               <div
@@ -61,25 +99,42 @@ function QuestionResult({ question }: { question: Question }) {
   );
 }
 
-export function GameComplete({ score, total, onRestart, questions }: GameCompleteProps) {
-  const percentage = Math.round((score / total) * 100);
-  const emoji = percentage >= 80 ? "🏆" : percentage >= 50 ? "👏" : "💪";
-
+export function GameComplete({
+  onRestart,
+  questions,
+  playerName,
+  playerAnswers,
+}: GameCompleteProps) {
+  // Count how many matched majority
   return (
     <Card className="w-full max-w-lg mx-auto animate-bounce-in">
       <CardContent className="p-8">
         <div className="text-center mb-6">
-          <span className="text-8xl block mb-4">{emoji}</span>
-          <h2 className="text-3xl font-bold mb-2">¡Juego terminado!</h2>
-          <p className="text-xl text-muted-foreground">
-            Puntuación: <span className="font-bold text-primary">{score}/{total}</span> ({percentage}%)
+          <span className="text-8xl block mb-4">🎉</span>
+          <h2 className="text-3xl font-bold mb-2">¡Bien hecho, {playerName}!</h2>
+          <p className="text-muted-foreground">
+            Mirá cómo se comparan tus respuestas con las de los demás
           </p>
         </div>
 
+        <div className="flex justify-center gap-6 mb-6">
+          <div className="text-center">
+            <span className="text-success text-2xl font-bold">✓</span>
+            <p className="text-xs text-muted-foreground">= Mayoría</p>
+          </div>
+          <div className="text-center">
+            <span className="text-destructive text-2xl font-bold">✗</span>
+            <p className="text-xs text-muted-foreground">= Minoría</p>
+          </div>
+        </div>
+
         <div className="space-y-6 mb-6">
-          <h3 className="text-lg font-semibold text-center">Resultados</h3>
           {questions.map((q) => (
-            <QuestionResult key={q.id} question={q} />
+            <QuestionResult
+              key={q.id}
+              question={q}
+              playerAnswerId={playerAnswers[q.id]}
+            />
           ))}
         </div>
 

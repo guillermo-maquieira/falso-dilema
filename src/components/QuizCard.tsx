@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 interface QuizCardProps {
   question: Question;
-  onAnswer: (correct: boolean) => void;
+  onAnswer: (correct: boolean, questionId?: string, answerId?: string) => void;
 }
 
 export function QuizCard({ question, onAnswer }: QuizCardProps) {
@@ -19,7 +19,7 @@ export function QuizCard({ question, onAnswer }: QuizCardProps) {
   // Auto-skip if already voted
   useEffect(() => {
     if (hasVoted) {
-      onAnswer(false);
+      onAnswer(false, question.id);
     }
   }, [hasVoted]);
 
@@ -39,7 +39,7 @@ export function QuizCard({ question, onAnswer }: QuizCardProps) {
     }
 
     setTimeout(() => {
-      onAnswer(isCorrect);
+      onAnswer(isCorrect, question.id, answerId);
       setSelected(null);
     }, 500);
   };
