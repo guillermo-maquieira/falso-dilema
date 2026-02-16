@@ -53,6 +53,21 @@ export function useHasVoted(questionId: string) {
   });
 }
 
+export function useResetVotes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("votes").delete().neq("id", "");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["has-voted"] });
+      queryClient.invalidateQueries({ queryKey: ["vote-counts"] });
+    },
+  });
+}
+
 export function useSubmitVote() {
   const queryClient = useQueryClient();
 
