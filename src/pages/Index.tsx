@@ -4,6 +4,7 @@ import { useQuestions } from "@/hooks/useQuestions";
 import { QuizCard } from "@/components/QuizCard";
 import { ScoreDisplay } from "@/components/ScoreDisplay";
 import { GameComplete } from "@/components/GameComplete";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 
@@ -57,6 +58,7 @@ const Index = () => {
         ) : (
           <>
             <ScoreDisplay score={score} total={shuffledQuestions.length} current={currentIndex + 1} />
+            <Progress value={(currentIndex / shuffledQuestions.length) * 100} className="max-w-lg mx-auto mb-6 h-2" />
             <QuizCard key={currentQuestion.id} question={currentQuestion} onAnswer={handleAnswer} />
           </>
         )}

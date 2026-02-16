@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuestions, useCreateQuestion, useDeleteQuestion, useUpdateQuestion } from "@/hooks/useQuestions";
-import { Trash2, Plus, X, Eye, Pencil } from "lucide-react";
+import { useResetVotes } from "@/hooks/useVotes";
+import { Trash2, Plus, X, Eye, Pencil, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { QuestionEditor } from "./QuestionEditor";
 import type { Question } from "@/hooks/useQuestions";
@@ -13,6 +14,7 @@ export function AdminPanel() {
   const createQuestion = useCreateQuestion();
   const deleteQuestion = useDeleteQuestion();
   const updateQuestion = useUpdateQuestion();
+  const resetVotes = useResetVotes();
 
   const [emoji, setEmoji] = useState("");
   const [answers, setAnswers] = useState([
@@ -152,7 +154,24 @@ export function AdminPanel() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Preguntas ({questions?.length ?? 0})</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Preguntas ({questions?.length ?? 0})</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  await resetVotes.mutateAsync();
+                  toast.success("Votos reseteados");
+                } catch {
+                  toast.error("Error al resetear votos");
+                }
+              }}
+              disabled={resetVotes.isPending}
+            >
+              <RotateCcw className="w-4 h-4 mr-1" /> Resetear votos
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
